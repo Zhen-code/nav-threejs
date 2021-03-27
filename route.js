@@ -2,20 +2,20 @@
  * 保存所有节点以及名称，也可包含其他信息
  * */
 var points = {
-    0:{name:"节点0",position:[7.762,0.6,-5.938]},
-    1:{name:"节点1",position:[-43.788,0.6,-8.513]},
-    2:{name:"节点2",position:[32.879,0.6,-21.828]},
-    3:{name:"节点3",position:[-74.926,0.6,-22.559]},
-    4:{name:"节点4",position:[-95.634,0.6,-87.428]},
-    5:{name:"节点5",position:[-111.448,0.6,-61.915]},
-    6:{name:"节点6",position:[-55.130,0.6,-76.962]},
-    7:{name:"节点7",position:[-65.357,0.6,-75.378]},
-    8:{name:"节点8",position:[-15.316,0.6,-79.091]},
-    9:{name:"节点9",position:[49.568,0.6,-90.582]},
-    10:{name:"节点10",position:[72.967,0.6,-77.303]},
-    11:{name:"节点11",position:[-85.876,0.6,-95.992]},
-    12:{name:"节点12",position:[21.183,0.6,-75.973]},
-    13:{name:"节点13",position:[91.732,0.6,-50.798]},
+    0:{name:"节点0",position:[-0.267,0.6,-7.465]},
+    1:{name:"节点1",position:[-45.624,0.6,-7.308]},
+    2:{name:"节点2",position:[20.652,0.6,-24.946]},
+    3:{name:"节点3",position:[-66.953,0,-20.580]},
+    4:{name:"节点4",position:[-98.823,0.6,-87.402]},
+    5:{name:"节点5",position:[-116.448,0.6,-61.537]},
+    6:{name:"节点6",position:[-20.233,0.6,-78.804]},
+    7:{name:"节点7",position:[45.555,0.6,-94.877]},
+    8:{name:"节点8",position:[69.713,0.6,-79.167]},
+    9:{name:"节点9",position:[-95.648,0.6,-106.712]},
+    // 10:{name:"节点10",position:[72.967,0.6,-77.303]},
+    // 11:{name:"节点11",position:[-85.876,0.6,-95.992]},
+    // 12:{name:"节点12",position:[21.183,0.6,-75.973]},
+    // 13:{name:"节点13",position:[91.732,0.6,-50.798]},
     // 100:{name:"节点100",position:[7.013,0.6,-38.239]},
     // 200:{name:"节点101",position:[48.981,0.6,-38.239]},
     // 0:{name:"节点0",position:[-10.89,0.6,-21.11]},
@@ -49,18 +49,24 @@ function getLength(src,des){
 /**
  * 节点的数量
  * */
-var pointnum = 14;
+var pointnum = 9
 
 /**
  *  此项为所有节点的连通性，这里测试数据中区分了道路的双向
  *  如果线路不区分双向，则同一条道路的两个方向数据可以合并为一条，比如{src:0,des:1}与{src:1,des:0}可合并为{src:0,des:1}
  * */
 var routes = [
+    {src:1,des:0,cost:1,extra:"1-0"},
+    {src:0,des:1,cost:1,extra:"0-1"},
+    {src:0,des:2,cost:2,extra:"0-2"},
+    {src:1,des:2,cost:10,extra:"1-2"},
+    {src:1,des:3,cost:3,extra:"1-3"},
+    {src:3,des:4,cost:4,extra:"3-4"},
+    {src:3,des:5,cost:5,extra:"3-5"},
+    // {src:0,des:2,cost:15.345,extra:"0-2"},
     // {src:0,des:100,cost:1.00,extra:"0-100"},
-    {src:0,des:1,cost:12.345,extra:"0-1"},
-    {src:0,des:2,cost:15.345,extra:"0-2"},
-    {src:0,des:3,cost:10.345,extra:"0-3"},
-    {src:0,des:4,cost:10.345,extra:"0-4"},
+    // {src:0,des:3,cost:10.345,extra:"0-3"},
+    // {src:0,des:4,cost:10.345,extra:"0-4"},
     // {src:0,des:20,cost:13.880,extra:"0-20"},
     // {src:1,des:0,cost:12.345,extra:"1-0"},
     // {src:1,des:2,cost:6.090,extra:"1-2"},
@@ -142,7 +148,6 @@ function initSingleDirectionRouteMatrix(){
             des = route.des;//终点
         matrix[src][des] = route.cost;
     }
-    console.log(matrix)
 }
 
 /**
@@ -228,8 +233,6 @@ function Dijkstra(adjMatrix,sourceV) {
         }
         count++;
     }
-    console.log(path)
-    console.log(dist)
     return {
         path: path,
         dist: dist
