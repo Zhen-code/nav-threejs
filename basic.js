@@ -4,6 +4,8 @@
 function initScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color( '#F5F4F4' );
+    // const axesHelper = new THREE.AxesHelper( 50 );
+    // scene.add( axesHelper );
     // scene.background = new THREE.Color( '#000000' );
 }
 
@@ -29,12 +31,18 @@ function initCamera(){
 function initControl(){
     controls = new THREE.OrbitControls( camera,renderer.domElement );//用户交互
     //设置相机的角度范围
-    controls.maxPolarAngle = Math.PI * 0.5;
+    controls.maxPolarAngle = Math.PI * 0.2;
     //设置相机距离原点的最远距离
-    controls.minDistance = 0;
+    controls.minDistance = 0.6;
     //设置相机距离原点的最远距离
     controls.maxDistance = 400;
     controls.target.set(-3.0,0,-60.268);
+    controls.enablePan = true;
+    // controls.mouseButtons = {
+    //     LEFT: THREE.MOUSE.RIGHT,
+    //     RIGHT: THREE.MOUSE.LEFT,
+    //     MIDDLE: THREE.MOUSE.MIDDLE,
+    // }
 }
 /**
  * 初始化渲染

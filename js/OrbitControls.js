@@ -250,7 +250,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
 
-	var STATE = { NONE: - 1, ROTATE: 0, DOLLY: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_DOLLY_PAN: 4 };
+	var STATE = { NONE: - 1, ROTATE: 0, DOLLY: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_DOLLY_PAN: 4,  TOUCH_DOLLY_ROTATE: 5 };
 
 	var state = STATE.NONE;
 
@@ -573,6 +573,42 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	}
 
+	// TODO新增
+	function handleTouchStartPan( event ) {
+		if ( scope.enablePan ) {
+			// + event.touches[ 1 ].pageX || 0
+			var x = 0.5 * ( event.touches[ 0 ].pageX);
+			// event.touches[ 1 ].pageY || 0
+			var y = 0.5 * ( event.touches[ 0 ].pageY);
+
+			panStart.set( x, y );
+
+		}
+	}
+
+	function handleTouchStartDollyRotate( event ) {
+
+		//console.log( 'handleTouchStartDollyRotate' );
+
+		if ( scope.enableZoom ) {
+
+			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+			var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+
+			var distance = Math.sqrt( dx * dx + dy * dy );
+
+			dollyStart.set( 0, distance );
+
+		}
+
+		if ( scope.enableRotate ) {
+
+
+
+		}
+
+	}
+
 	function handleTouchStartDollyPan( event ) {
 
 		//console.log( 'handleTouchStartDollyPan' );
@@ -587,19 +623,46 @@ THREE.OrbitControls = function ( object, domElement ) {
 			dollyStart.set( 0, distance );
 
 		}
+			//TODO 双指平移开启
+		// if ( scope.enablePan ) {
+		//
+		// 	var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+		// 	var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+		//
+		// 	panStart.set( x, y );
+		//
+		// }
 
-		if ( scope.enablePan ) {
 
-			var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
-			var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
-
-			panStart.set( x, y );
-
+		//TODO 双指旋转开启
+		if ( scope.enableRotate ){
+			/**
+			 event.touches[ 0 ].pageX > event.touches[ 1 ].pageX
+			 **/
+			rotateStart.set( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX, event.touches[ 0 ].pageY + event.touches[ 1 ].pageY);
 		}
 
 	}
 
-	function handleTouchMoveRotate( event ) {
+	function handleTouchMoveRotates( event ) { // TODO 新增双指旋转
+
+		rotateEnd.set( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX, event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+
+		rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+
+		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+
+		rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+
+		rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+
+		rotateStart.copy( rotateEnd );
+
+		scope.update();
+
+	}
+
+	function handleTouchMoveRotate( event ) { //原始旋转方法
 
 		//console.log( 'handleTouchMoveRotate' );
 
@@ -619,10 +682,27 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	}
 
+	function handleTouchMovePan(event) { // TODO 新增平移处理
+		if ( scope.enablePan ) {
+
+			var x = 0.5 * ( event.touches[ 0 ].pageX );
+			var y = 0.5 * ( event.touches[ 0 ].pageY );
+
+			panEnd.set( x, y );
+
+			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+
+			pan( panDelta.x, panDelta.y );
+
+			panStart.copy( panEnd );
+
+		}
+	}
+
 	function handleTouchMoveDollyPan( event ) {
 
 		//console.log( 'handleTouchMoveDollyPan' );
-
+		//
 		if ( scope.enableZoom ) {
 
 			var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
@@ -640,20 +720,22 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		}
 
-		if ( scope.enablePan ) {
+		handleTouchMoveRotates(event)
 
-			var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
-			var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
-
-			panEnd.set( x, y );
-
-			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
-
-			pan( panDelta.x, panDelta.y );
-
-			panStart.copy( panEnd );
-
-		}
+		// if ( scope.enablePan ) { //原始平移
+		//
+		// 	var x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
+		// 	var y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
+		//
+		// 	panEnd.set( x, y );
+		//
+		// 	panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+		//
+		// 	pan( panDelta.x, panDelta.y );
+		//
+		// 	panStart.copy( panEnd );
+		//
+		// }
 
 		scope.update();
 
@@ -674,9 +756,8 @@ THREE.OrbitControls = function ( object, domElement ) {
 		if ( scope.enabled === false ) return;
 
 		event.preventDefault();
-
+		console.log(event.button)
 		switch ( event.button ) {
-
 			case scope.mouseButtons.LEFT:
 
 				if ( event.ctrlKey || event.metaKey ) {
@@ -814,24 +895,34 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		switch ( event.touches.length ) {
 
-			case 1:	// one-fingered touch: rotate
+			case 1:	// one-fingered touch: rotate  -- TODO rotate 更改为pan
+				//是否可移动
+				if( scope.enablePan === false) return;
+				handleTouchStartPan(event)
+				state = STATE.PAN
 
-				if ( scope.enableRotate === false ) return;
-
-				handleTouchStartRotate( event );
-
-				state = STATE.TOUCH_ROTATE;
+				//是否可旋转
+				// if ( scope.enableRotate === false ) return;
+				//
+				// handleTouchStartRotate( event );
+				//
+				// state = STATE.TOUCH_ROTATE;
 
 				break;
 
-			case 2:	// two-fingered touch: dolly-pan
+			case 2:	// two-fingered touch: dolly-pan -- TODO 缩放平移更改为缩放旋转
 
-				if ( scope.enableZoom === false && scope.enablePan === false ) return;
+				// if ( scope.enableZoom === false && scope.enablePan === false ) return;
 
-				handleTouchStartDollyPan( event );
 
-				state = STATE.TOUCH_DOLLY_PAN;
+				if ( scope.enableZoom === false && scope.enableRotate === false ) return;
 
+
+				handleTouchStartDollyPan( event );// TODO 更改为DollyRotate
+				state = STATE.TOUCH_DOLLY_ROTATE
+
+
+				// state = STATE.TOUCH_DOLLY_PAN;
 				break;
 
 			default:
@@ -857,21 +948,26 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		switch ( event.touches.length ) {
 
-			case 1: // one-fingered touch: rotate
+			case 1: // one-fingered touch: rotate -- TODO rotate更改为pan
 
-				if ( scope.enableRotate === false ) return;
-				if ( state !== STATE.TOUCH_ROTATE ) return; // is this needed?
+				if (scope.enablePan === false ) return;
+				if ( state !== STATE.PAN ) return;
+				handleTouchMovePan(event)
 
-				handleTouchMoveRotate( event );
+				// if ( scope.enableRotate === false ) return;
+				// if ( state !== STATE.TOUCH_ROTATE ) return; // is this needed?
+				// handleTouchMoveRotate( event ); // 处理旋转
 
 				break;
 
 			case 2: // two-fingered touch: dolly-pan
 
-				if ( scope.enableZoom === false && scope.enablePan === false ) return;
-				if ( state !== STATE.TOUCH_DOLLY_PAN ) return; // is this needed?
+				// if ( scope.enableZoom === false && scope.enablePan === false ) return;
+				// if ( state !== STATE.TOUCH_DOLLY_PAN ) return; // is this needed?
 
-				handleTouchMoveDollyPan( event );
+				if ( scope.enableZoom === false && scope.enableRotate === false ) return;
+				if ( state !== STATE.TOUCH_DOLLY_ROTATE ) return; // is this needed?
+				handleTouchMoveDollyPan( event ); //原始缩放与平移--平移改旋转
 
 				break;
 

@@ -20,6 +20,9 @@
     <div id="routeResult" style="min-height:120px;background-color: #fff;"></div>
 </div>
 <script src="js/three.js"></script>
+<script>
+    console.log(THREE)
+</script>
 <script type="text/javascript" src="js/Earcut.js"></script>
 <script src="js/OrbitControls.js"></script>
 <script src="basic.js"></script>
@@ -27,6 +30,7 @@
 <script src="route.js"></script>
 <script src="buffer.js"></script>
 <script src="js/tween.min.js"></script>
+<script src="./pathData/path.js"></script>
 <script>
         var controls;
         var camera, scene, renderer, light;
@@ -68,24 +72,36 @@
          * 从节点编号为start出发到end的路径规划
          * */
         function getRoute(){
+            let data = pathData.twoFloor;
             var start = Number(document.getElementById("startIndex").value);
             let end = Number(document.getElementById("endIndex").value);
-            var result = searchPath(start, end, matrix);
-            console.log(result)
-            if(result){
-                var distance = result.distance;//距离
-                var path = result.path;//节点
-                if(path.length > 0){
-                    var coords = [];
-                    for(var i=0;i<path.length;i++){
-                        var position = points[path[i]].position;
-                        coords.push([position[0],position[2]]);
-                    }
-                    console.log(coords)
-                    addMeshLine(coords);
-                    addRouteArrow(coords);
+            let val = start + '' + end
+            console.log(typeof val)
+            let path = data[val],coords = [];
+            // var result = searchPath(start, end, matrix);
+            // console.log(result)
+            // if(result){
+            //     var distance = result.distance;//距离
+            //     var path = result.path;//节点
+            //     if(path.length > 0){
+            //         var coords = [];
+            //         for(var i=0;i<path.length;i++){
+            //             var position = points[path[i]].position;
+            //             coords.push([position[0],position[2]]);
+            //         }
+            //         console.log(coords)
+            //         addMeshLine(coords);
+            //         addRouteArrow(coords);
+            //     }
+            //     document.getElementById("routeResult").innerHTML = "从节点"+start+"到节点"+end+",最短距离为"+distance+",经过的节点为:"+path.join(",");
+            // }
+            if(path.length > 0){
+                for(var i=0;i<path.length;i++){
+                    var position = points[path[i]].position;
+                    coords.push([position[0],position[2]]);
                 }
-                document.getElementById("routeResult").innerHTML = "从节点"+start+"到节点"+end+",最短距离为"+distance+",经过的节点为:"+path.join(",");
+                addMeshLine(coords);
+                addRouteArrow(coords);
             }
         }
 
@@ -97,7 +113,7 @@
             let detailCoords = new lineBuffer({coords:lineCoords, radius:0.5}).getBufferCoords();
             var vertices = [], faces = [], data=[];
             for(var i=0;i<detailCoords.length;i++){
-                vertices.push(new THREE.Vector3(detailCoords[i][0],2,detailCoords[i][1]));
+                vertices.push(new THREE.Vector3(detailCoords[i][0],4,detailCoords[i][1]));
                 data.push(detailCoords[i][0],detailCoords[i][1]);
             }
             var triangles = Earcut.triangulate(data);
@@ -131,7 +147,7 @@
             });
             routeArrow = new THREE.Mesh(geometry, material);
             routeArrow.position.x =  coords[0][0];
-            routeArrow.position.y =  0;
+            routeArrow.position.y =  4;
             routeArrow.position.z =  coords[0][1];
             routeArrow.rotation.x = Math.PI/2;
             scene.add(routeArrow);
